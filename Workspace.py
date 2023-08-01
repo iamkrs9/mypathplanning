@@ -3,11 +3,11 @@ from typing import List, Union, Tuple
 import matplotlib.figure
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
+from matplotlib.patches import Rectangle, Polygon
 
 
 class WorkSpace:
-    def __init__(self, corners: List[float], start: Tuple[float, float], goal: Tuple[float, float], resolution):
+    def __init__(self, corners: List[float], start: Tuple[float, float], goal: Tuple[float, float], resolution: float = 1):
         self.x_min = corners[0]
         self.x_max = corners[1]
         self.y_min = corners[2]
@@ -16,9 +16,13 @@ class WorkSpace:
         self.goal = goal
         self.obs = None
         self.resolution = resolution
+        self.fig = None
+        self.ax = None
 
-    def create_workspace(self) -> matplotlib.figure.Figure:
+    def create_workspace(self):
         fig, ax = plt.subplots()
+        self.fig = fig
+        self.ax = ax
         plt.ylim(self.y_min - 0.2, self.y_max + 0.2)
         plt.xlim(self.x_min - 0.2, self.x_max + 0.2)
 
@@ -54,7 +58,7 @@ class WorkSpace:
         plt.plot(self.goal[0], self.goal[1], "gs")
         plt.axis("equal")
 
-        return fig
+        return
 
     def add_obstacles(self, obs_pos: List[Tuple[float, float]]):
         self.obs = obs_pos
@@ -72,7 +76,21 @@ class WorkSpace:
         x_centroid = np.average(x_pos)
         y_centroid = np.average(y_pos)
 
-        return (x_centroid, y_centroid)
+        return x_centroid, y_centroid
+
+
+class WorkSpaceContinuous(WorkSpace):
+    def __init__(self, *args, **kwargs):
+        super(WorkSpaceContinuous, self).__init__(*args, **kwargs)
+
+    def add_obstacles(self, obs_pos: List[Tuple[float, float]]):
+        y = np.array([[1, 1], [2, 1], [2, 2], [1, 2], [0.5, 1.5]])
+        p = Polygon(y, facecolor='k')
+        self.ax.add_patch(p)
+
+        y = np.array([[10, 10], [40, 10], [40, 25], [10, 25]])
+        p = Polygon(y, facecolor='k')
+        self.ax.add_patch(p)
 
 
 if __name__ == '__main__':
